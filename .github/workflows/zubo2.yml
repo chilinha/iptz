@@ -1,8 +1,8 @@
 name: zubo2
 
 on:
-  schedule:
-    - cron: '30 8 * * *'
+#  schedule:
+#    - cron: '30 8 * * *'
   workflow_dispatch:
 
 jobs:
@@ -37,16 +37,6 @@ jobs:
           git add .
           git commit -m "更新组播源"
 #          git push
-
-      - name: Push To Gitee
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GE_TOKEN }}
-          repository: ${{ secrets.GE_PATH }}
-          directory: .
-          branch: iptv
-          force: true
-          github_url: https://gitee.com
 
       - name: Push To Github
         uses: ad-m/github-push-action@master
