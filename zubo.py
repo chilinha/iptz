@@ -94,10 +94,10 @@ def multicast_province(config_file):
             with open(template_file, 'r', encoding='utf-8') as f:
                 tem_channels = f.read()
             output = [] 
+            output.append(f"{province},#genre#\n") 
             with open(f"ip/{province}_ip.txt", 'r', encoding='utf-8') as f:
-                for line_num, line in enumerate(f, 1):
+                for line in f:
                     ip = line.strip()
-                    output.append(f"{province}-组播{line_num},#genre#\n")
                     output.append(tem_channels.replace("ipipip", f"{ip}"))
             with open(f"组播_{province}.txt", 'w', encoding='utf-8') as f:
                 f.writelines(output)
