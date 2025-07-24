@@ -135,10 +135,10 @@ def main():
         with open(file_path, 'r', encoding="utf-8") as f:
             file_contents.append(f.read())
     now = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=8)
-    current_time = now.strftime("%Y/%m/%d %H:%M")
+    current_time = now.strftime("%m/%d %H:%M")
     with open("zubo_all.txt", "w", encoding="utf-8") as f:
         f.write(f"{current_time},#genre#\n")
-        f.write(f"浙江卫视,http://ali-m-l.cztv.com/channels/lantian/channel001/1080p.m3u8\n")
+        f.write(f"天津卫视,http://60.29.124.66:6080/hls/1/index.m3u8\n")
         f.write('\n'.join(file_contents))
     txt_to_m3u("zubo_all.txt", "zubo_all.m3u")
     print(f"组播地址获取完成")
