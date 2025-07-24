@@ -67,7 +67,8 @@ def scan_ip_port(ip, port, option, url_end):
 
 def multicast_province(config_file):
     filename = os.path.basename(config_file)
-    province = filename.split('_')[0]
+    raw_province = filename.split('_')[0]
+    province = raw_province[2:]  # 去除前两位数字
     print(f"{'='*25}\n   获取: {province}ip_port\n{'='*25}")
     configs = sorted(set(read_config(config_file)))
     print(f"读取完成，共需扫描 {len(configs)}组")
@@ -78,28 +79,32 @@ def multicast_province(config_file):
     if len(all_ip_ports) != 0:
         all_ip_ports = sorted(set(all_ip_ports))
         print(f"\n{province} 扫描完成，获取有效ip_port共：{len(all_ip_ports)}个\n{all_ip_ports}\n")
-        with open(f"ip/{province}_ip.txt", 'w', encoding='utf-8') as f:
-            f.write('\n'.join(all_ip_ports))    #有效ip_port写入文件
-        with open(f"ip/存档_{province}_ip.txt", 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            for ip_port in all_ip_ports:
-                ip, port = ip_port.split(":")
-                a, b, c, d = ip.split(".")
-                lines.append(f"{a}.{b}.{c}.1:{port}\n")
-            lines = sorted(set(lines))
-        with open(f"ip/存档_{province}_ip.txt", 'w', encoding='utf-8') as f:
-            f.writelines(lines)    
+        result_file = os.path.join('ip', f"{province}_ip.txt")
+        with open(result_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(all_ip_ports))
+        archive_file = os.path.join('ip', f"存档_{province}_ip.txt")
+        try:
+            with open(archive_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            lines = []
+        for ip_port in all_ip_ports:
+            ip, port = ip_port.split(":")
+            a, b, c, d = ip.split(".")
+            lines.append(f"{a}.{b}.{c}.1:{port}\n")
+        lines = sorted(set(lines))
+        with open(archive_file, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
         template_file = os.path.join('template', f"template_{province}.txt")
         if os.path.exists(template_file):
             with open(template_file, 'r', encoding='utf-8') as f:
                 tem_channels = f.read()
-            output = [] 
-            output.append(f"{province},#genre#\n") 
-            with open(f"ip/{province}_ip.txt", 'r', encoding='utf-8') as f:
+            output = [f"{province},#genre#\n"]
+            with open(result_file, 'r', encoding='utf-8') as f:
                 for line in f:
                     ip = line.strip()
                     output.append(tem_channels.replace("ipipip", f"{ip}"))
-            with open(f"组播_{province}.txt", 'w', encoding='utf-8') as f:
+            with open(f"组播_{raw_province}.txt", 'w', encoding='utf-8') as f:
                 f.writelines(output)
         else:
             print(f"缺少模板文件: {template_file}")
@@ -122,21 +127,17 @@ def txt_to_m3u(input_file, output_file):
                     f.write(f'{channel_url}\n')
 
 def main():
-    for config_file in glob.glob(os.path.join('ip', '*_config.txt')):
+    config_files = sorted(glob.glob(os.path.join('ip', '*_config.txt')))
+    for config_file in config_files:
         multicast_province(config_file)
     file_contents = []
-    for file_path in glob.glob('组播_*电信.txt'):
+    for file_path in sorted(glob.glob('组播_*.txt')):
         with open(file_path, 'r', encoding="utf-8") as f:
-            content = f.read()
-            file_contents.append(content)
-    for file_path in glob.glob('组播_*联通.txt'):
-        with open(file_path, 'r', encoding="utf-8") as f:
-            content = f.read()
-            file_contents.append(content)
+            file_contents.append(f.read())
     now = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=8)
     current_time = now.strftime("%Y/%m/%d %H:%M")
     with open("zubo_all.txt", "w", encoding="utf-8") as f:
-        f.write(f"{current_time}更新,#genre#\n")
+        f.write(f"{current_time},#genre#\n")
         f.write(f"浙江卫视,http://ali-m-l.cztv.com/channels/lantian/channel001/1080p.m3u8\n")
         f.write('\n'.join(file_contents))
     txt_to_m3u("zubo_all.txt", "zubo_all.m3u")
