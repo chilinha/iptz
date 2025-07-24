@@ -167,7 +167,7 @@ def main():
             file_contents.append(f.read())
     
     now = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=8)
-    current_time = now.strftime("%y/%m/%d %H:%M")
+    current_time = now.strftime("%Y/%m/%d %H:%M")
     with open("zubo_all.txt", "w", encoding="utf-8") as f:
         f.write(f"更新时间,#genre#\n")
         f.write(f"{current_time},http://60.29.124.66:6080/hls/1/index.m3u8\n")
