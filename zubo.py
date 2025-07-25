@@ -140,7 +140,7 @@ def txt_to_m3u(input_file, output_file):
 
 def main():
     os.makedirs('zubo', exist_ok=True)
-    config_files = sorted(glob.glob(os.path.join('ip', '[0-9].*_config.txt')))
+    config_files = sorted(glob.glob(os.path.join('ip', '*_config.txt')))
     for config_file in config_files:
         multicast_province(config_file)
     file_contents = []
