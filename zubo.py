@@ -140,21 +140,14 @@ def txt_to_m3u(input_file, output_file):
 
 def main():
     os.makedirs('zubo', exist_ok=True)
-    all_files = glob.glob(os.path.join('ip', '*.txt'))
-    config_files = [
-        f for f in all_files 
-        if re.match(r'.*[\\/]\d+.*_config\.txt$', f)
-    ]
-    config_files = sorted(config_files)
-    print(f"找到 {len(config_files)} 个配置文件:")
-    for cf in config_files:
-        print(f" - {os.path.basename(cf)}")
+    config_files = sorted(glob.glob(os.path.join('ip', '[0-9].*_config.txt')))
     for config_file in config_files:
         multicast_province(config_file)
     file_contents = []
     for file_path in sorted(glob.glob(os.path.join('zubo', '*.txt'))):
         with open(file_path, 'r', encoding="utf-8") as f:
             file_contents.append(f.read())
+    
     now = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=8)
     current_time = now.strftime("%Y/%m/%d %H:%M")
     with open("zubo_all.txt", "w", encoding="utf-8") as f:
