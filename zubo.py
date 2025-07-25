@@ -67,18 +67,15 @@ def scan_ip_port(ip, port, option, url_end):
     return valid_ip_ports
 
 def multicast_province(config_file):
-    # 从配置文件名提取原始省份名（含序号）
     filename = os.path.basename(config_file)
-    raw_prefix = filename.split('_')[0]  # 包含序号的原始前缀
-    province = raw_prefix[2:]             # 友好省份名（去除前两位数字）
+    raw_prefix = filename.split('_')[0]
+    province = raw_prefix[2:]
     
     print(f"{'='*25}\n   获取: {province} IP端口\n{'='*25}")
-    
-    # 读取配置
+
     configs = sorted(set(read_config(config_file)))
     print(f"读取完成，共需扫描 {len(configs)}组")
-    
-    # 扫描IP端口
+
     all_ip_ports = []
     for ip, port, option, url_end in configs:
         print(f"\n开始扫描  http://{ip}:{port}{url_end}")
@@ -87,22 +84,18 @@ def multicast_province(config_file):
     if not all_ip_ports:
         print(f"\n{province} 扫描完成，未扫描到有效IP端口")
         return
-    
-    # 处理扫描结果
+
     all_ip_ports = sorted(set(all_ip_ports))
     print(f"\n{province} 扫描完成，获取有效IP端口: {len(all_ip_ports)}个")
-    
-    # 定义所有文件路径
+
     ip_dir = 'ip'
     result_file = os.path.join(ip_dir, f"{province}_ip.txt")
     archive_file = os.path.join(ip_dir, f"存档_{province}_ip.txt")
     template_file = os.path.join('template', f"template_{province}.txt")
     
-    # 保存扫描结果
     with open(result_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(all_ip_ports))
-    
-    # 更新存档文件
+
     if os.path.exists(archive_file):
         with open(archive_file, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -117,22 +110,16 @@ def multicast_province(config_file):
     with open(archive_file, 'w', encoding='utf-8') as f:
         f.writelines(sorted(set(lines)))
     
-    # 生成组播文件 - 修改点：放入zubo目录并去除"组播_"前缀
     if not os.path.exists(template_file):
         print(f"缺少模板文件: {template_file}")
         return
-    
     with open(template_file, 'r', encoding='utf-8') as f:
         tem_channels = f.read()
-    
     output = [f"{province},#genre#\n"]
     with open(result_file, 'r', encoding='utf-8') as f:
         for line in f:
             ip = line.strip()
             output.append(tem_channels.replace("ipipip", f"{ip}"))
-    
-    # 修改点1：去除"组播_"前缀
-    # 修改点2：放入zubo目录
     with open(os.path.join('zubo', f"{raw_prefix}.txt"), 'w', encoding='utf-8') as f:
         f.writelines(output)
 
@@ -152,15 +139,10 @@ def txt_to_m3u(input_file, output_file):
                     f.write(f'{channel_url}\n')
 
 def main():
-    # 确保zubo目录存在
     os.makedirs('zubo', exist_ok=True)
-    
-    # 处理所有配置文件
-    config_files = sorted(glob.glob(os.path.join('ip', '*_config.txt')))
+    config_files = sorted(glob.glob(os.path.join('ip', '[0-9].*_config.txt')))
     for config_file in config_files:
         multicast_province(config_file)
-    
-    # 修改点：从zubo目录收集文件
     file_contents = []
     for file_path in sorted(glob.glob(os.path.join('zubo', '*.txt'))):
         with open(file_path, 'r', encoding="utf-8") as f:
